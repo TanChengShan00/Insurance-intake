@@ -39,7 +39,7 @@
 <body>
 
 <script>
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzK6epr8ZsuWbLw2DivRZXyIoc7JCDA-HckVZUfaGymyXXE8ZM-tVxnnY7WLVuL5-890Q/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVBmxmSXlSdqVCegiwJXdfSfETU111Od61FriE4iT1-2GJNXUybj4huy07HRHT0IMvng/exec";
   const ADVISER_PIN = "8080";
 </script>
 
@@ -57,7 +57,7 @@ let selectedClient = null;
 let generated = {};
 
 const form = {
-  name: "", phone: "", age: "",
+  name: "", phone: "", age: "", income: "",
   coverage: [], budget: "", marital: "",
   employment: "", smoker: "",
   medicalConditions: "", medicalDetails: "",
@@ -150,18 +150,9 @@ function renderClient() {
 function renderStep() {
   if (step === 0) return `
     <div style="display:flex;flex-direction:column;gap:20px">
-      <div><label class="label">Full Name</label><input class="input" id="f-name" value="${form.name}" placeholder="e.g. Khong Ching Yi" oninput="form.name=this.value"></div>
-      <div><label class="label">Phone</label><input class="input" id="f-phone" value="${form.phone}" placeholder="+65 9XXX XXXX" oninput="form.phone=this.value"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div><label class="label">Age</label><input class="input" id="f-age" type="number" value="${form.age}" placeholder="26" min="18" max="80" oninput="form.age=this.value"></div>
-        <div>
-          <label class="label">Marital Status</label>
-          <div style="display:flex;gap:10px;margin-top:4px">
-            <div class="chip ${form.marital==='single'?'active':''}" data-field="marital" data-value="single" onclick="setField('marital','single')">Single</div>
-            <div class="chip ${form.marital==='married'?'active':''}" data-field="marital" data-value="married" onclick="setField('marital','married')">Married</div>
-          </div>
-        </div>
-      </div>
+      <div><label class="label">Full Name</label><input class="input" id="f-name" value="${form.name}" placeholder="e.g. Tan Cheng Shan" oninput="form.name=this.value"></div>
+      <div><label class="label">Phone</label><input class="input" id="f-phone" value="${form.phone}" placeholder="e.g. 87279022" oninput="form.phone=this.value"></div>
+      <div><label class="label">Age</label><input class="input" id="f-age" type="number" value="${form.age}" placeholder="" min="18" max="80" oninput="form.age=this.value"></div>
     </div>`;
   if (step === 1) return `
     <div style="display:flex;flex-direction:column;gap:24px">
@@ -192,6 +183,13 @@ function renderStep() {
           <div class="chip ${form.employment==='employed'?'active':''}" data-field="employment" data-value="employed" onclick="setField('employment','employed')">Employed</div>
           <div class="chip ${form.employment==='self-employed'?'active':''}" data-field="employment" data-value="self-employed" onclick="setField('employment','self-employed')">Self-employed</div>
           <div class="chip ${form.employment==='not-working'?'active':''}" data-field="employment" data-value="not-working" onclick="setField('employment','not-working')">Not working</div>
+        </div>
+      </div>
+      <div>
+        <label class="label">Annual Income (SGD)</label>
+        <div style="display:flex;align-items:center;gap:0">
+          <span style="padding:14px 12px;background:var(--border);border:1px solid var(--border);border-radius:10px 0 0 10px;color:var(--emerald);font-size:15px;font-weight:600">$</span>
+          <input class="input" id="f-income" type="text" value="${form.income}" placeholder="e.g. 50000" oninput="formatIncome(this)" style="border-radius:0 10px 10px 0;border-left:none">
         </div>
       </div>
       <div>
@@ -327,6 +325,7 @@ function renderClientDetail() {
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px">
           ${[
             {l:"AGE",v:c.age},
+            {l:"INCOME",v:"$" + (c.income || "—")},
             {l:"MARITAL",v:c.marital || "—"},
             {l:"BUDGET",v:"$" + c.budget + "/mo"},
             {l:"DEPENDANTS",v:c.dependants || "0"},
@@ -379,6 +378,14 @@ function setField(key, val) {
   });
 }
 
+function formatIncome(el) {
+  var raw = el.value.replace(/[^0-9]/g, '');
+  form.income = raw;
+  if (raw) {
+    el.value = parseInt(raw).toLocaleString();
+  }
+}
+
 function toggleArr(key, val) {
   if (val === "Not sure") { form[key] = form[key].includes(val) ? [] : [val]; }
   else {
@@ -398,15 +405,16 @@ function syncInputs() {
   el = document.getElementById('f-name'); if (el) form.name = el.value;
   el = document.getElementById('f-phone'); if (el) form.phone = el.value;
   el = document.getElementById('f-age'); if (el) form.age = el.value;
+  el = document.getElementById('f-income'); if (el) form.income = el.value.replace(/[^0-9]/g, '');
   el = document.getElementById('f-medicalDetails'); if (el) form.medicalDetails = el.value;
   el = document.getElementById('f-insuranceDetails'); if (el) form.insuranceDetails = el.value;
 }
 
 function canNext() {
   syncInputs();
-  if (step === 0) return form.name && form.phone && form.age && parseInt(form.age) > 0 && form.marital;
+  if (step === 0) return form.name && form.phone && form.age && parseInt(form.age) > 0;
   if (step === 1) return form.coverage.length > 0 && form.budget;
-  if (step === 2) return form.employment && form.smoker && form.medicalConditions;
+  if (step === 2) return form.employment && form.income && form.smoker && form.medicalConditions;
   if (step === 3) return form.hasInsurance && form.dependants;
   return true;
 }
@@ -451,6 +459,7 @@ function copyPrompt() {
     "CLIENT PROFILE\n" +
     "- Name: " + c.name + "\n" +
     "- Age: " + c.age + "\n" +
+    "- Annual Income: $" + (c.income || "Not provided") + "\n" +
     "- Phone: " + c.phone + "\n" +
     "- Marital Status: " + c.marital + "\n" +
     "- Employment: " + c.employment + "\n" +
