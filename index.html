@@ -39,7 +39,7 @@
 <body>
 
 <script>
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVBmxmSXlSdqVCegiwJXdfSfETU111Od61FriE4iT1-2GJNXUybj4huy07HRHT0IMvng/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzjPDigXUpivPPoXbqm_kBYuuoKSAdaseRMJtwAfodWrGg8NrrGGrOWJFqk-fVh-hcuMA/exec";
   const ADVISER_PIN = "8080";
 </script>
 
@@ -325,12 +325,11 @@ function renderClientDetail() {
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px">
           ${[
             {l:"AGE",v:c.age},
-            {l:"INCOME",v:"$" + (c.income || "—")},
-            {l:"MARITAL",v:c.marital || "—"},
             {l:"BUDGET",v:"$" + c.budget + "/mo"},
-            {l:"DEPENDANTS",v:c.dependants || "0"},
             {l:"EMPLOYMENT",v:c.employment || "—"},
-            {l:"SMOKER",v:c.smoker === "yes" ? "Yes" : "No"},
+            {l:"INCOME",v:c.income ? "$" + parseInt(c.income).toLocaleString() : "—"},
+            {l:"DEPENDANTS",v:c.dependants || "0"},
+            {l:"SMOKER",v:c.smoker === "no" ? "No" : "Yes"},
           ].map(function(item) { return '<div style="background:var(--card);border-radius:10px;border:1px solid var(--border);padding:16px 18px"><div style="color:var(--text-muted);font-size:10px;letter-spacing:0.12em;font-weight:600;margin-bottom:6px">' + item.l + '</div><div style="color:var(--emerald);font-size:18px;font-weight:700">' + item.v + '</div></div>'; }).join("")}
         </div>
 
